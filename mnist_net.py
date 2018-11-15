@@ -5,25 +5,26 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
+from mnist_fixpoint import FixConv2D
 
 class MnistNet(nn.Module):
     def __init__(self):
         super(MnistNet, self).__init__()
 
         self.block_1 = nn.Sequential(
-                nn.Conv2d(1, 96, kernel_size=3, stride=2, padding=2),
+                FixConv2D(1, 96, kernel_size=3, stride=2, padding=2),
                 nn.ReLU(inplace=False),
                 nn.MaxPool2d(kernel_size=2, stride=2),
                 nn.BatchNorm2d(96)
             )
         self.block_2 = nn.Sequential(
-                nn.Conv2d(96, 32, kernel_size=3, stride=1, padding=1),
+                FixConv2D(96, 32, kernel_size=3, stride=1, padding=1),
                 nn.ReLU(inplace=False),
                 nn.MaxPool2d(kernel_size=2, stride=2),
                 nn.BatchNorm2d(32)
             )
         self.block_3 = nn.Sequential(
-                nn.Conv2d(32, 10, kernel_size=3, stride=1, padding=1),
+                FixConv2D(32, 10, kernel_size=3, stride=1, padding=1),
                 nn.ReLU(inplace=False),
                 nn.MaxPool2d(kernel_size=2, stride=2),
                 nn.BatchNorm2d(10)
@@ -46,7 +47,7 @@ loss_fn = nn.CrossEntropyLoss()
 learning_rate = 1e-3
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 print(model)
-model.load_state_dict(torch.load("./mnist_model.pt"))
+# model.load_state_dict(torch.load("./mnist_model.pt"))
 for epoch_num in range(40):
     model.train()
     for iter_num, input_data in enumerate(train_data_loader):
@@ -59,6 +60,7 @@ for epoch_num in range(40):
 
         # model.zero_grad()
         loss.backward()
+        optimizer.step()
     print("=============================Finished Epoch {}".format(epoch_num))
     model.eval()
     test_loss = 0
