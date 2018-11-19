@@ -12,19 +12,22 @@ class MnistNet(nn.Module):
         super(MnistNet, self).__init__()
 
         self.block_1 = nn.Sequential(
-                FixConv2D(1, 96, kernel_size=3, stride=2, padding=2),
-                nn.ReLU(inplace=False),
-                nn.MaxPool2d(kernel_size=2, stride=2),
-                nn.BatchNorm2d(96)
-            )
-        self.block_2 = nn.Sequential(
-                FixConv2D(96, 32, kernel_size=3, stride=1, padding=1),
+                # FixConv2D(1, 32, kernel_size=3, stride=2, padding=2, training=self.training),
+                nn.Conv2d(1, 32, kernel_size=3, stride=2, padding=2),
                 nn.ReLU(inplace=False),
                 nn.MaxPool2d(kernel_size=2, stride=2),
                 nn.BatchNorm2d(32)
             )
+        self.block_2 = nn.Sequential(
+                # FixConv2D(32, 64, kernel_size=3, stride=2, padding=2, training=self.training),
+                nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
+                nn.ReLU(inplace=False),
+                nn.MaxPool2d(kernel_size=2, stride=2),
+                nn.BatchNorm2d(64)
+            )
         self.block_3 = nn.Sequential(
-                FixConv2D(32, 10, kernel_size=3, stride=1, padding=1),
+                # FixConv2D(64, 10, kernel_size=3, stride=2, padding=2, training=self.training),
+                nn.Conv2d(64, 10, kernel_size=3, stride=1, padding=1),
                 nn.ReLU(inplace=False),
                 nn.MaxPool2d(kernel_size=2, stride=2),
                 nn.BatchNorm2d(10)
@@ -43,8 +46,8 @@ test_mnist_data = MNIST('./mnist', train=False, download=True, transform = trans
 train_data_loader = DataLoader(train_mnist_data, batch_size=4, shuffle=True)
 test_data_loader = DataLoader(test_mnist_data, batch_size=4, shuffle=False)
 model = MnistNet()
-loss_fn = nn.CrossEntropyLoss()
-learning_rate = 1e-3
+loss_fn = nn.NLLLoss()
+learning_rate = 1e-2
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 print(model)
 # model.load_state_dict(torch.load("./mnist_model.pt"))
@@ -78,4 +81,4 @@ for epoch_num in range(40):
     print("test loss: {}, correct: {} in {}, precition: {}".format(test_loss, 
         correct, len(test_data_loader.dataset), precision))
 
-torch.save(model.state_dict(), "./mnist_model_new.pt")
+torch.save(model.state_dict(), "./mnist_model.pt")
